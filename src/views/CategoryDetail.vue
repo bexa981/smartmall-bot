@@ -45,7 +45,7 @@ const goBack = () => {
 </script>
 
 <template>
-    <div class="p-4 pb-24 relative">
+    <div class="p-3 pb-24 relative">
         <!-- Back Button -->
         <button @click="goBack" class="absolute top-0 left-0 p-2 text-gray-700">
             <ChevronLeftIcon class="w-6 h-6" />

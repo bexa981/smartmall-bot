@@ -20,7 +20,7 @@ const products = ref([
 </script>
 
 <template>
-  <div class="p-4 bg-white-50 min-h-screen">
+  <div class="p-2 bg-white-50 min-h-screen">
     <nav class="flex justify-between items-center">
       <Account />
       <Location />

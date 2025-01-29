@@ -22,7 +22,7 @@ const saveAddress = () => {
 </script>
 
 <template>
-    <div class="p-4">
+    <div class="p-3">
         <h2 class="text-lg font-bold text-center">Manzilni tanlang</h2>
         <div class="mt-6 bg-gray-100 p-10 text-center rounded-lg">
             <p v-if="!selectedAddress">Joylashuv tanlanmoqda...</p>

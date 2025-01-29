@@ -58,7 +58,7 @@ const goToProductDetail = (product) => {
 </script>
 
 <template>
-    <div class="p-4 mb-30">
+    <div class="p-0 mb-30">
         <div v-for="category in categories" :key="category.name">
             <h2 class="text-lg font-bold mb-2">{{ category.name }}</h2>
 

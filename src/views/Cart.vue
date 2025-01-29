@@ -50,7 +50,7 @@ const proceedToCheckout = () => {
 </script>
 
 <template>
-    <div class="p-4 pb-24 relative">
+    <div class="p-3 pb-24 relative">
         <!-- Header -->
         <div class="flex justify-between items-center mb-4">
             <button @click="router.push('/')" class="p-2">

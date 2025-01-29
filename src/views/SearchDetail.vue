@@ -98,7 +98,7 @@ const goBack = () => {
 
 <template>
     <transition name="slide-right">
-        <div class="p-4">
+        <div class="p-3">
             <!-- **🔹 Search Bar** -->
             <div class="flex items-center justify-between">
                 <button @click="goBack"

@@ -49,7 +49,7 @@ const addToCart = () => {
 </script>
 
 <template>
-    <div class="p-4 pb-24">
+    <div class="p-3 pb-24">
         <!-- Back Button -->
         <div class="relative flex justify-center">
             <button @click="goBack" class="absolute top-0 left-0 p-2 rounded-full bg-white-200 hover:bg-white-300 transition">

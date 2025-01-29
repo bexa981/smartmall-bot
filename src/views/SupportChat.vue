@@ -39,7 +39,7 @@ const sendMessage = () => {
 <template>
     <div class="flex mainmsg flex-col h-[100vh]  bg-white">
         <!-- Header -->
-        <div class="flex bg-white justify-between items-center p-4 border-b-1 border-gray-100 shadow-md">
+        <div class="flex bg-white justify-between items-center p-3 border-b-1 border-gray-100 shadow-md">
             <button @click="router.push('/')" class="text-gray-700">
                 <ChevronLeftIcon class="w-6 h-6" />
             </button>
