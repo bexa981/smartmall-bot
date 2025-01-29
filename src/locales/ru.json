@@ -66,5 +66,11 @@
     "descriptionTitle": "Описание",
     "addToCart": "Добавить в корзину",
     "addedToCart": "Товар добавлен в корзину!"
-  }
+  },
+  "order": {
+    "selectPaymentMethod": "Выберите способ оплаты",
+    "paymentMethod": "Способ оплаты",
+    "cash": "Оплата наличными",
+    "card": "Оплата картой"
+}
 }

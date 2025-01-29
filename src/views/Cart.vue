@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ChevronLeftIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/vue/24/solid';
@@ -43,9 +43,9 @@ const removeItem = (id) => {
     cartItems.value = cartItems.value.filter(item => item.id !== id);
 };
 
-// Proceed to checkout
+// **Navigate to OrderMain.vue**
 const proceedToCheckout = () => {
-    alert(t('cart.proceed'));
+    router.push('/order-main'); // Redirects to OrderMain.vue
 };
 </script>
 
@@ -124,3 +124,4 @@ const proceedToCheckout = () => {
     align-items: center;
 }
 </style>
+

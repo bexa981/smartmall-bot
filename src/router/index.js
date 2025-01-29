@@ -5,7 +5,7 @@ import CategoryDetail from "../views/CategoryDetail.vue";
 import Cart from "../views/Cart.vue";
 import SupportChat from "../views/SupportChat.vue";
 import SearchDetail from "../views/SearchDetail.vue";
-
+import OrderMain from "../views/OrderMain.vue";
 const routes = [
   { path: "/", component: Home },
 
@@ -86,7 +86,7 @@ const routes = [
     name: "MapSelect",
     component: () => import("../views/MapSelect.vue"),
   },
-  
+  { path: "/order-main", component: OrderMain },
 ];
 
 const router = createRouter({
@@ -95,4 +95,3 @@ const router = createRouter({
 });
 
 export default router;
-

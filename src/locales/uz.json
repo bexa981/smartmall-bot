@@ -67,5 +67,11 @@
     "descriptionTitle": "Tavsif",
     "addToCart": "Savatga qo'shish",
     "addedToCart": "Mahsulot savatga qo'shildi!"
-  }
+  },
+  "order": {
+    "selectPaymentMethod": "To'lov usulini tanlang",
+    "paymentMethod": "To'lov usuli",
+    "cash": "Naqd pul orqali to'lash",
+    "card": "Karta orqali to'lash"
+}
 }
