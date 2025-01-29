@@ -1,0 +1,70 @@
+{
+  "aboutUs": {
+    "title": "О нас",
+    "subtitle": "Мы рады предоставить вам услугу",
+    "workingHours": "Часы работы",
+    "days": {
+      "monday": "Понедельник",
+      "tuesday": "Вторник",
+      "wednesday": "Среда",
+      "thursday": "Четверг",
+      "friday": "Пятница",
+      "saturday": "Суббота",
+      "sunday": "Воскресенье"
+    },
+    "branches": "Филиалы",
+    "branchAddress": "Сурхандарья Денов т SH Рашидов ECO bog' ro'parasi",
+    "branchLocation": "Узбекистан, Сурхандарьинская область, Термез, улица Ислама Каримова",
+    "contact": "Контакты",
+    "phone": "+998978100404",
+    "socialMedia": "Социальные сети"
+  },
+  "menu": {
+    "personalInfo": "Мои данные",
+    "orders": "Мои заказы",
+    "favorites": "Избранное",
+    "addresses": "Мои адреса",
+    "notifications": "Уведомления",
+    "language": "Язык",
+    "aboutUs": "О нас",
+    "contactUs": "Связаться с нами"
+  },
+  "language": {
+    "title": "Язык",
+    "ru": "Русский",
+    "uz": "O'zbekcha",
+    "confirm": "Подтвердить"
+  },
+  "location": {
+    "selectAddress": "Выберите адрес доставки",
+    "continue": "Продолжить",
+    "deliveryAddress": "Адрес доставки",
+    "enterAddress": "Введите адрес",
+    "entrance": "Подъезд",
+    "floor": "Этаж",
+    "room": "Квартира",
+    "courierNote": "Комментарий для курьера (код домофона)",
+    "addressName": "Название адреса",
+    "confirm": "Подтвердить"
+  },
+  "cart": {
+    "title": "Корзина",
+    "selectAll": "Выбрать все",
+    "items": "Товары",
+    "total": "Общий",
+    "proceed": "Продолжить"
+  },
+  "search": {
+    "placeholder": "Искать товары",
+    "resultsFound": "Результатов найдено",
+    "noResults": "Товары не найдены",
+    "lastResults": "Последние запросы",
+    "categories": "Категории"
+  },
+  "product": {
+    "description": "Этот продукт изготовлен из высококачественных материалов и прослужит долго.",
+    "descriptionTitle": "Описание",
+    "addToCart": "Добавить в корзину",
+    "addedToCart": "Товар добавлен в корзину!"
+  }
+}

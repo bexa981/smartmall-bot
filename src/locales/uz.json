@@ -1,0 +1,71 @@
+{
+  "aboutUs": {
+    "title": "Biz haqimizda",
+    "subtitle": "Sizga xizmat ko'rsatganimizdan mamnunmiz",
+    "workingHours": "Ish vaqti",
+    "days": {
+      "monday": "Dushanba",
+      "tuesday": "Seshanba",
+      "wednesday": "Chorshanba",
+      "thursday": "Payshanba",
+      "friday": "Juma",
+      "saturday": "Shanba",
+      "sunday": "Yakshanba"
+    },
+    "branches": "Filiallar",
+    "branchAddress": "Surxondaryo Denov t SH Rashidov ECO bo'g' ro'parasi",
+    "branchLocation": "Uzbekistan, Surxondarya Region, Termez, Islam Karimov Street",
+    "contact": "Aloqa",
+    "phone": "+998978100404",
+    "socialMedia": "Ijtimoiy tarmoqlar"
+  },
+
+  "menu": {
+    "personalInfo": "Shaxsiy ma'lumotlarim",
+    "orders": "Buyurtmalarim",
+    "favorites": "Sevimlilar",
+    "addresses": "Manzillarim",
+    "notifications": "Bildirishmalar",
+    "language": "Til",
+    "aboutUs": "Biz haqimizda",
+    "contactUs": "Aloqa uchun"
+  },
+  "language": {
+    "title": "Til",
+    "ru": "Русский",
+    "uz": "O'zbekcha",
+    "confirm": "Tasdiqlash"
+  },
+  "location": {
+    "selectAddress": "Yetkazish manzilini tanlang",
+    "continue": "Davom etish",
+    "deliveryAddress": "Yetkazish manzili",
+    "enterAddress": "Manzilni kiriting",
+    "entrance": "Kirish yoʻlagi",
+    "floor": "Qavat",
+    "room": "Xona",
+    "courierNote": "Kuryer uchun izoh (domofon kodi)",
+    "addressName": "Manzil nomi",
+    "confirm": "Tasdiqlash"
+  },
+  "cart": {
+    "title": "Savatcha",
+    "selectAll": "Hammasini tanlash",
+    "items": "Mahsulotlar",
+    "total": "Umumiy",
+    "proceed": "Davom etish"
+  },
+  "search": {
+    "placeholder": "Mahsulotlarni qidirish",
+    "resultsFound": "Natija topildi",
+    "noResults": "Mahsulot topilmadi",
+    "lastResults":"Oxirgi qidiriliganlar",
+    "categories":"Kategoriyalar"
+  },
+  "product": {
+    "description": "Ushbu mahsulot yuqori sifatli materiallardan tayyorlangan va uzoq muddat xizmat qiladi.",
+    "descriptionTitle": "Tavsif",
+    "addToCart": "Savatga qo'shish",
+    "addedToCart": "Mahsulot savatga qo'shildi!"
+  }
+}
