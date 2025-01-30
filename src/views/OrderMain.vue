@@ -11,19 +11,23 @@ const router = useRouter();
 
 const showPaymentModal = ref(false);
 const selectedPaymentMethod = ref(localStorage.getItem('selectedPaymentMethod') || '');
-const orderType = ref('delivery');
+const orderType = ref('Yetkazib berish');
 const totalPrice = ref(parseFloat(localStorage.getItem('totalCartPrice')) || 0);
 const userId = ref(localStorage.getItem('userId') || generateUserId()); // Unique User ID
 
 // Load cart items from localStorage
 const cartItems = ref(JSON.parse(localStorage.getItem('cartItems')) || []);
 
+// **User Name & Phone Number Fields**
+const userName = ref(localStorage.getItem('userName') || "Noma'lum foydalanuvchi");
+const userPhone = ref(localStorage.getItem('userPhone') || "Noma'lum telefon");
 // Generate a unique user ID
 function generateUserId() {
     const id = 'user-' + Math.floor(Math.random() * 1000000);
     localStorage.setItem('userId', id);
     return id;
 }
+// **Save User Info to LocalStorage**
 
 // **Save Payment Method to LocalStorage**
 watch(selectedPaymentMethod, (newValue) => {
@@ -36,10 +40,16 @@ const confirmOrder = async () => {
         alert('Iltimos, toʻlov usulini tanlang!');
         return;
     }
+    if (!userName.value || !userPhone.value) {
+        alert('Iltimos, ismingiz va telefon raqamingizni kiriting!');
+        return;
+    }
 
     const orderData = {
         userId: userId.value,
         orderType: orderType.value,
+        userName: userName.value,
+        userPhone: userPhone.value,
         paymentMethod: selectedPaymentMethod.value,
         totalPrice: totalPrice.value,
         cartItems: cartItems.value,
@@ -57,6 +67,7 @@ const confirmOrder = async () => {
         alert('Buyurtma tasdiqlandi!');
         
         // Clear cart & order details
+   
         localStorage.removeItem('cartItems');
         localStorage.removeItem('totalCartPrice');
         localStorage.removeItem('selectedPaymentMethod');
@@ -75,6 +86,8 @@ const sendOrderToTelegram = async (order) => {
 
     let message = `📦 *Yangi Buyurtma*\n\n`;
     message += `🆔 *User ID:* ${order.userId}\n`;
+    message += `👤 *Foydalanuvchi:* ${order.userName}\n`;
+    message += `📞 *Telefon:* ${order.userPhone}\n`;
     message += `📍 *Buyurtma turi:* ${order.orderType}\n`;
     message += `💳 *To'lov usuli:* ${order.paymentMethod}\n`;
     message += `💰 *Umumiy narx:* ${order.totalPrice.toLocaleString()} UZS\n\n`;
@@ -83,7 +96,7 @@ const sendOrderToTelegram = async (order) => {
     order.cartItems.forEach((item, index) => {
         message += `\n${index + 1}. 🏷 *${item.name}*\n`;
         message += `   🖼 [Rasm](${item.image})\n`;
-        message += `   💲 *Narxi:* ${item.price} UZS\n`;
+        message += `   💲 *Narxi:* ${item.price} $\n`;
         message += `   🔢 *Soni:* ${item.quantity}\n`;
     });
 
@@ -131,15 +144,15 @@ const selectPaymentMethod = (method) => {
         <!-- Order Type -->
         <h3 class="text-md font-semibold">Buyurtma turi</h3>
         <div class="mt-2 space-y-2">
-            <div @click="orderType = 'delivery'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
-                :class="{ 'bg-green-100 border border-green-600': orderType === 'delivery' }">
+            <div @click="orderType = 'Yetkazib berish'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
+                :class="{ 'bg-green-100 border border-green-600': orderType === 'Yetkazib berish' }">
                 <p class="font-semibold">Yetkazib berish</p>
-                <input type="radio" v-model="orderType" value="delivery" class="w-5 h-5">
+                <input type="radio" v-model="orderType" value="Yetkazib berish" class="w-5 h-5">
             </div>
-            <div @click="orderType = 'pickup'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
-                :class="{ 'bg-green-100 border border-green-600': orderType === 'pickup' }">
+            <div @click="orderType = 'Olib ketish'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
+                :class="{ 'bg-green-100 border border-green-600': orderType === 'Olib ketish' }">
                 <p class="font-semibold">Olib ketish</p>
-                <input type="radio" v-model="orderType" value="pickup" class="w-5 h-5">
+                <input type="radio" v-model="orderType" value="Olib ketish" class="w-5 h-5">
             </div>
         </div>
 

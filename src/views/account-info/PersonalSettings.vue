@@ -15,7 +15,7 @@ onMounted(() => {
     phoneNumber.value = localStorage.getItem("userPhone") || "";
     userName.value = localStorage.getItem("userName") || "";
 
-    // **Retrieve user's Telegram info if they are entering via Telegram WebApp**
+    // **🔹 Check if user entered via Telegram WebApp**
     if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe.user) {
         const tgUser = window.Telegram.WebApp.initDataUnsafe.user;
         if (tgUser.first_name) {
@@ -25,8 +25,12 @@ onMounted(() => {
     }
 });
 
-// **🔹 Save changes locally**
+// **🔹 Save changes to localStorage**
 const saveChanges = () => {
+    if (!userName.value.trim()) {
+        alert(t("profile.enterValidName"));
+        return;
+    }
     localStorage.setItem("userName", userName.value);
     alert(t("profile.savedMessage")); // **Use i18n for notifications**
 };
@@ -44,17 +48,19 @@ const goBack = () => {
             <button @click="goBack" class="p-2 cursor-pointer bg-gray-100 border border-gray-300 rounded text-gray-700 flex items-center">
                 <ChevronLeftIcon class="w-6 h-6" />
             </button>
-            <h2 class="text-center text-lg font-semibold absolute left-[30%]">{{ t('profile.title') }}</h2>
+            <h2 class="text-center text-lg font-semibold flex-grow">{{ t('profile.title') }}</h2>
         </div>
 
         <!-- **🔹 Phone Number (Read-only)** -->
         <div class="mb-4">
+            <label class="block font-semibold mb-1">{{ t('profile.phoneNumber') }}</label>
             <input type="text" v-model="phoneNumber" disabled
                 class="w-full bg-gray-100 text-gray-500 px-4 py-3 rounded-lg focus:outline-none" />
         </div>
 
         <!-- **🔹 User Name (Editable)** -->
         <div class="mb-4">
+            <label class="block font-semibold mb-1">{{ t('profile.userName') }}</label>
             <input type="text" v-model="userName" :placeholder="t('profile.enterName')"
                 class="w-full bg-gray-100 px-4 py-3 rounded-lg focus:outline-none focus:ring focus:ring-blue-300" />
         </div>
@@ -73,3 +79,4 @@ button:hover {
     transition: all 0.3s ease-in-out;
 }
 </style>
+
