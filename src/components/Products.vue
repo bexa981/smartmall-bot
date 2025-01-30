@@ -1,78 +1,88 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase";
 import { HeartIcon as SolidHeartIcon } from '@heroicons/vue/24/solid';
 import { HeartIcon as OutlineHeartIcon } from '@heroicons/vue/24/outline';
-import ProductIcon from '../assets/icons/box.png';
+
 const router = useRouter();
-const categories = ref([
-    { name: "Вытяжки", image: "https://via.placeholder.com/100" },
-    { name: "Duxovkalar", image: "https://via.placeholder.com/100" },
-    { name: "Микроволновки", image: "https://via.placeholder.com/100" },
-    { name: "Konditsionerlar", image: "https://via.placeholder.com/100" }
-]);
 
-const products = ref([
-    { name: "Кухонная вытяжка Artel-1160", price: 4, image: ProductIcon, category: "Вытяжки" },
-    { name: "Кухонная вытяжка Bosch", price: 15, image: ProductIcon, category: "Вытяжки" },
-    { name: "Кухонная вытяжка Samsung", price: 2, image: ProductIcon, category: "Вытяжки" },
-    
-    { name: "Микроволновка Samsung", price: 23, image: ProductIcon, category: "Микроволновки" },
-    { name: "Микроволновка LG", price: 15, image: ProductIcon, category: "Микроволновки" },
-
-    { name: "Духовка Bosch", price: 17, image: ProductIcon, category: "Duxovkalar" },
-    { name: "Духовка Samsung", price: 17, image: ProductIcon, category: "Duxovkalar" },
-
-    { name: "Кондиционер LG", price: 23, image: ProductIcon, category: "Konditsionerlar" },
-    { name: "Кондиционер Samsung", price: 5, image: ProductIcon, category: "Konditsionerlar" }
-]);
-
-// Get liked products from localStorage
+// **Reactive Variables**
+const categories = ref([]);
+const products = ref([]);
 const likedProducts = ref(JSON.parse(localStorage.getItem('likedProducts')) || {});
 
-// Watch likedProducts and update localStorage whenever it changes
+// **Watch likedProducts and update localStorage whenever it changes**
 watch(likedProducts, (newVal) => {
     localStorage.setItem('likedProducts', JSON.stringify(newVal));
 }, { deep: true });
 
-// Toggle like function
-const toggleLike = (product) => {
-    if (likedProducts.value[product.name]) {
-        delete likedProducts.value[product.name]; // Remove from liked
-    } else {
-        likedProducts.value[product.name] = product; // Add to liked
+// **Fetch Categories & Products from Firestore**
+const fetchCategoriesAndProducts = async () => {
+    try {
+        console.log("Fetching categories...");
+        const categoriesSnapshot = await getDocs(collection(db, "categories"));
+        categories.value = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log("✅ Categories Fetched:", categories.value);
+
+        console.log("Fetching products...");
+        const productsSnapshot = await getDocs(collection(db, "products"));
+        products.value = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        console.log("✅ Products Fetched:", products.value);
+    } catch (error) {
+        console.error("🔥 Firebase Error:", error.message);
     }
 };
 
-// Navigate to Product Detail Page
+// **Navigate to Product Detail Page**
 const goToProductDetail = (product) => {
     router.push({
         name: 'ProductDetail',
         query: {
+            id: product.id,
             name: product.name,
             price: product.price,
-            image: product.image
+            image: product.image,
+            description:product.description
         }
     });
 };
+const toggleLike = (product) => {
+    if (likedProducts.value[product.id]) {
+        delete likedProducts.value[product.id]; // Remove from liked
+    } else {
+        likedProducts.value[product.id] = product; // Add to liked
+    }
+};
+
+// **Fetch Data When Component Mounts**
+onMounted(() => {
+    fetchCategoriesAndProducts();
+});
 </script>
 
 <template>
-    <div class="p-0 mb-30">
-        <div v-for="category in categories" :key="category.name">
-            <h2 class="text-lg font-bold mb-2">{{ category.name }}</h2>
+    <div v-if="categories.length === 0 || products.length === 0">
+        <p>Loading...</p> <!-- Show loading message -->
+    </div>
 
-            <!-- Scrollable product list for each category -->
-            <div class="overflow-x-auto whitespace-nowrap flex space-x-4 scrollbar-hide py-2">
-                <div v-for="product in products.filter(p => p.category === category.name)" :key="product.name"
+    <div v-else>
+        <div v-for="category in categories" :key="category.id">
+            <h2 class="text-lg font-bold mb-2">{{ category.id }}</h2> <!-- 🔥 Fixed category name display -->
+
+            <!-- 🔹 Scrollable Product List 🔹 -->
+            <div class="overflow-x-auto flex space-x-4 py-2 scrollbar-hide" ref="scrollContainer">
+                <div v-for="product in products.filter(p => p.category === category.id)" 
+                    :key="product.id"
                     class="bg-white p-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
-                    @click="goToProductDetail(product)">
+                    @click="goToProductDetail(product)">  
 
                     <div class="relative">
-                        <img :src="product.image" alt="Product Image" class="w-40 h-40 object-cover rounded-lg" />
+                        <img :src="product.image" class="w-40 h-40 object-contain rounded-lg" />
                         <button @click.stop="toggleLike(product)"
                             class="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md">
-                            <SolidHeartIcon v-if="likedProducts[product.name]" class="w-6 h-6 text-red-600" />
+                            <SolidHeartIcon v-if="likedProducts[product.id]" class="w-6 h-6 text-red-600" />
                             <OutlineHeartIcon v-else class="w-6 h-6 text-gray-500" />
                         </button>
                     </div>
@@ -85,7 +95,17 @@ const goToProductDetail = (product) => {
 </template>
 
 <style scoped>
-/* Hide scrollbar for better UI */
+/* 🔹 Horizontal Scroll */
+.overflow-x-auto {
+    scroll-behavior: smooth;
+    white-space: nowrap;
+    overflow-x: auto;
+    display: flex;
+    gap: 12px;
+    padding-bottom: 10px;
+}
+
+/* Hide scrollbar */
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
@@ -95,7 +115,7 @@ const goToProductDetail = (product) => {
     scroll-behavior: smooth;
 }
 
-/* Fix text truncation for product names */
+/* 🔹 Fix text truncation for product names */
 .truncate-2-lines {
     display: -webkit-box;
     -webkit-line-clamp: 2;

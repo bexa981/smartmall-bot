@@ -27,7 +27,8 @@
     "notifications": "Уведомления",
     "language": "Язык",
     "aboutUs": "О нас",
-    "contactUs": "Связаться с нами"
+    "contactUs": "Связаться с нами",
+    "logout": "Выйти"
   },
   "language": {
     "title": "Язык",
@@ -72,5 +73,11 @@
     "paymentMethod": "Способ оплаты",
     "cash": "Оплата наличными",
     "card": "Оплата картой"
-}
+  },
+  "profile": {
+    "title": "Мои личные данные",
+    "enterName": "Введите ваше имя",
+    "saveChanges": "Сохранить изменения",
+    "savedMessage": "Данные успешно сохранены!"
+  }
 }

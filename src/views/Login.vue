@@ -1,14 +1,19 @@
 <script setup>
-import { ref } from 'vue';
+import { ref,watch  } from 'vue';
 import { CheckCircleIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
 
-const phoneNumber = ref("");
+const phoneNumber = ref("+998");
 const showAlert = ref(false);
 
 const emit = defineEmits(["login-success"]);
-
+// Ensure the user cannot delete "+998"
+const formatPhoneNumber = () => {
+    if (!phoneNumber.value.startsWith("+998")) {
+        phoneNumber.value = "+998";
+    }
+}
 const savePhoneNumber = () => {
-    if (phoneNumber.value.trim().length >= 9) {
+    if (phoneNumber.value.length >= 13) { // Ensure at least 9 digits after +998
         localStorage.setItem("userPhone", phoneNumber.value);
         showAlert.value = true;
 
@@ -18,6 +23,7 @@ const savePhoneNumber = () => {
         }, 1500);
     }
 };
+watch(phoneNumber, formatPhoneNumber);
 </script>
 
 <template>
@@ -26,18 +32,20 @@ const savePhoneNumber = () => {
             <div class="w-full bg-white p-6 rounded-t-3xl shadow-lg">
                 <!-- Title -->
                 <h2 class="text-xl font-semibold text-center">Telefon raqamingizni kiriting</h2>
+
+                <!-- Phone Input -->
+                <div class="flex items-center border border-gray-200 bg-gray-100 p-3 rounded-lg mt-4">
+                    <img src="https://www.svgrepo.com/show/405649/flag-for-flag-uzbekistan.svg" 
+                         alt="Uzbekistan Flag" class="w-7 h-7 mr-2" />
+                    <input type="text" v-model="phoneNumber" 
+                           @input="formatPhoneNumber"
+                           placeholder="+998" 
+                           class="w-full outline-none" />
+                </div>
                 <p class="text-center text-gray-500 text-sm mt-2">
                     Davom etish tugmasini bosish orqali siz bizning 
                     <a href="#" class="text-blue-500">Foydalanish qoidalarimizni</a> qabul qilasiz.
                 </p>
-
-                <!-- Phone Input -->
-                <div class="flex items-center border p-3 rounded-lg mt-4">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/84/Flag_of_Uzbekistan.svg" 
-                         alt="Uzbekistan Flag" class="w-6 h-4 mr-2" />
-                    <input type="text" v-model="phoneNumber" placeholder="+998" 
-                           class="w-full outline-none" />
-                </div>
 
                 <!-- Submit Button -->
                 <button @click="savePhoneNumber" 

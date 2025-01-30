@@ -1,52 +1,74 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ChevronLeftIcon, TrashIcon, MinusIcon, PlusIcon } from '@heroicons/vue/24/solid';
-import ProductIcon from '../assets/icons/box.png';
 
 const { t } = useI18n();
 const router = useRouter();
 
-// Load Cart Items from LocalStorage
-const cartItems = ref(JSON.parse(localStorage.getItem('cartItems')) || [
-    { id: 1, name: "Кухонная вытяжка Artel-1160 Rapido Touch", price: 33, image: ProductIcon, quantity: 1, selected: true },
-    { id: 2, name: "Кухонная вытяжка Artel-1160 Rapido Touch", price: 12, image: ProductIcon, quantity: 1, selected: true },
-    { id: 3, name: "Кухонная вытяжка Artel-1160 Rapido Touch", price: 55, image: ProductIcon, quantity: 1, selected: true }
-]);
+// **Load Cart Items from LocalStorage**
+const cartItems = ref(JSON.parse(localStorage.getItem('cartItems')) || []);
 
-// Save Cart Items to LocalStorage
+// **Watch & Save to LocalStorage**
 watch(cartItems, () => {
     localStorage.setItem('cartItems', JSON.stringify(cartItems.value));
+
+    // ✅ Correctly update total price in LocalStorage
+    const updatedTotal = cartItems.value
+        .filter(item => item.selected)
+        .reduce((sum, item) => sum + item.price * item.quantity, 0);
+    localStorage.setItem('totalCartPrice', updatedTotal.toFixed(2));
+
+    // ✅ Trigger storage event for `TotalPrice.vue`
+    window.dispatchEvent(new Event("storage"));
 }, { deep: true });
 
-// Select / Deselect all
-const selectAll = ref(true);
+// **Select / Deselect All**
+const selectAll = ref(cartItems.value.every(item => item.selected));
 const toggleSelectAll = () => {
     selectAll.value = !selectAll.value;
-    cartItems.value.forEach(item => item.selected = selectAll.value);
+    cartItems.value.forEach(item => (item.selected = selectAll.value));
 };
 
-// Update total price
+// **Update Total Price**
 const totalPrice = computed(() => {
     return cartItems.value
         .filter(item => item.selected)
         .reduce((sum, item) => sum + item.price * item.quantity, 0);
 });
 
-// Increase / Decrease quantity
-const increaseQuantity = (item) => item.quantity++;
-const decreaseQuantity = (item) => { if (item.quantity > 1) item.quantity--; };
+// **Increase / Decrease Quantity**
+const increaseQuantity = (item) => {
+    item.quantity++;
+};
+const decreaseQuantity = (item) => {
+    if (item.quantity > 1) item.quantity--;
+};
 
-// Delete item
+// **Delete Item**
 const removeItem = (id) => {
     cartItems.value = cartItems.value.filter(item => item.id !== id);
 };
 
-// **Navigate to OrderMain.vue**
-const proceedToCheckout = () => {
-    router.push('/order-main'); // Redirects to OrderMain.vue
+// **Clear Cart**
+const clearCart = () => {
+    cartItems.value = [];
+    localStorage.removeItem('cartItems');
+    localStorage.setItem('totalCartPrice', '0');
+    window.dispatchEvent(new Event("storage"));
 };
+
+// **Navigate to Order Page**
+const proceedToCheckout = () => {
+    router.push('/order-main');
+};
+
+// **Initialize Selection State**
+onMounted(() => {
+    if (!cartItems.value.length) return;
+    selectAll.value = cartItems.value.every(item => item.selected);
+});
 </script>
 
 <template>
@@ -57,7 +79,7 @@ const proceedToCheckout = () => {
                 <ChevronLeftIcon class="w-6 h-6 text-gray-700" />
             </button>
             <h2 class="text-lg text-green-800 font-bold text-center flex-grow">{{ t('cart.title') }}</h2>
-            <button @click="cartItems = []" class="p-2">
+            <button @click="clearCart" class="p-2">
                 <TrashIcon class="w-6 h-6 text-gray-400" />
             </button>
         </div>
@@ -72,10 +94,10 @@ const proceedToCheckout = () => {
         <!-- Cart Items -->
         <div v-for="item in cartItems" :key="item.id"
             class="bg-white p-3 rounded-lg shadow-md mb-4 flex items-center justify-between">
-            <div class="flex items-center">
+            <div class="flex items-center w-[100%]">
                 <input type="checkbox" v-model="item.selected" class="mr-3 w-5 h-5 text-green-800" />
                 <img :src="item.image" alt="Product Image" class="w-16 h-16 object-cover rounded-lg" />
-                <div class="ml-3 flex flex-col gap-3">
+                <div class="ml-3 flex flex-col gap-3 w-[100%]">
                     <p class="text-green-800 font-bold">{{ item.price }} $</p>
                     <p class="text-sm text-gray-700">{{ item.name }}</p>
                     <div class="flex justify-between">
@@ -97,7 +119,7 @@ const proceedToCheckout = () => {
         </div>
 
         <!-- Total Price & Proceed Button -->
-        <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-lg border-t border-gray-200">
+        <div v-if="cartItems.length > 0" class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-lg border-t border-gray-200">
             <div class="flex justify-between items-center mb-2">
                 <p class="text-md font-bold">{{ t('cart.total') }}</p>
                 <p class="text-lg font-bold text-green-800">{{ totalPrice.toLocaleString() }} $</p>
@@ -105,6 +127,11 @@ const proceedToCheckout = () => {
             <button @click="proceedToCheckout" class="w-full cursor-pointer bg-indigo-900 text-white py-3 rounded-lg">
                 {{ t('cart.proceed') }}
             </button>
+        </div>
+
+        <!-- Empty Cart Message -->
+        <div v-else class="text-center text-gray-500 mt-10">
+            <p>{{ t('cart.empty') }}</p>
         </div>
     </div>
 </template>

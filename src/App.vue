@@ -13,31 +13,30 @@ onMounted(() => {
 });
 
 const handleLoginSuccess = () => {
-  showLogin.value = false;
+  showLogin.value = false; // Hide login modal after login
+  location.reload();
 };
 </script>
 
 <template>
   <div>
-    <!-- Login Modal (Only Shows If User Hasn't Logged In) -->
-   
-      <LoginModal v-if="showLogin" @login-success="handleLoginSuccess" />
-  
+    <!-- 🔹 Login Modal (Shows Only If User Hasn't Logged In) -->
+    <LoginModal v-if="showLogin" @login-success="handleLoginSuccess" />
 
-    <!-- Main Application (Only Shows After Login) -->
-    <transition name="fade">
-      <router-view v-if="!showLogin" v-slot="{ Component }">
+    <!-- 🔹 Main Application (Shows After Login) -->
+    <router-view v-if="!showLogin" v-slot="{ Component }">
+      <transition name="fade">
         <component :is="Component" />
-      </router-view>
-    </transition>
+      </transition>
+    </router-view>
   </div>
 </template>
 
 <style scoped>
-/* Smooth Slide-Up Transition for Login */
+/* 🔹 Smooth Slide-Up Transition for Login */
 .slide-up-enter-active,
 .slide-up-leave-active {
-  transition: transform 0.2s ease-in-out, opacity 0.2s;
+  transition: transform 0.3s ease-in-out, opacity 0.3s;
 }
 
 .slide-up-enter-from {
@@ -50,7 +49,7 @@ const handleLoginSuccess = () => {
   opacity: 0;
 }
 
-/* Smooth Fade Transition for Main App */
+/* 🔹 Smooth Fade Transition for Main App */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.5s;
@@ -61,3 +60,4 @@ const handleLoginSuccess = () => {
   opacity: 0;
 }
 </style>
+

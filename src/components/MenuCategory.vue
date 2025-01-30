@@ -1,44 +1,48 @@
 <script setup>
-import { ref } from 'vue';
+import { ref,onMounted } from 'vue';
 import { Squares2X2Icon } from '@heroicons/vue/24/outline';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase"; // Ensure this is correctly set up
+import CategoryIcon from '../assets/icons/category.png';
+
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
+const router = useRouter();
 const { t } = useI18n(); // i18n Hook for translations
 const isOpen = ref(false);
-const router = useRouter();
+const categories = ref([]);
 
-const categories = [
-  { name: "Вытяжки", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Duxovkalar", image: "https://img.freepik.com/free-vector/realistic-vector-icon-illustration-modern-oven-multi-function-gas-stove-with-blue-fire-burner_134830-2432.jpg?ga=GA1.1.1167977278.1725462868&semt=ais_hybrid" },
-  { name: "Микроволновка", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Konditsionerlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Muzlatgichlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "MOBIL TELEFONLAR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "TV - TILVIZOR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Muzlatgichlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "MOBIL TELEFONLAR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "TV - TILVIZOR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Muzlatgichlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "MOBIL TELEFONLAR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "TV - TILVIZOR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Muzlatgichlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "MOBIL TELEFONLAR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "TV - TILVIZOR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "Muzlatgichlar", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "MOBIL TELEFONLAR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-  { name: "TV - TILVIZOR", image: "https://img.freepik.com/free-vector/microwave-oven-with-light-inside-isolated-white-background-kitchen-appliances_134830-658.jpg" },
-];
+const fetchCategories = async () => {
+    try {
+        console.log("Fetching categories...");
+        const categoriesSnapshot = await getDocs(collection(db, "categories"));
+        categories.value = categoriesSnapshot.docs.map(doc => ({
+            id: doc.id,  // Use ID as the category name
+            image: doc.data().image || CategoryIcon // Default image if missing
+        }));
+        console.log("✅ Categories Fetched:", categories.value);
+    } catch (error) {
+        console.error("🔥 Firebase Error:", error.message);
+    }
+};
+
 
 const toggleMenu = () => {
   isOpen.value = !isOpen.value;
 };
 
 // Navigate to Category Detail Page
-const goToCategoryDetail = (category) => {
-  isOpen.value = false; // Close menu after clicking
-  router.push({ name: 'CategoryDetail', query: { category: category.name } });
+const goToCategoryDetail = (categoryId) => {
+    router.push({
+        name: 'CategoryDetail',
+        query: { category: categoryId }
+    });
 };
+
+onMounted(() => {
+    fetchCategories();
+});
 </script>
 
 <template>
@@ -60,9 +64,9 @@ const goToCategoryDetail = (category) => {
         </div>
 
         <div class="grid grid-cols-3 gap-4 mt-4 max-h-[50vh] overflow-y-auto">
-          <div v-for="category in categories" :key="category.name" @click="goToCategoryDetail(category)" class="flex flex-col items-center cursor-pointer">
+          <div v-for="category in categories" :key="category.id" @click="goToCategoryDetail(category.id)" class="flex flex-col items-center cursor-pointer">
             <img :src="category.image" class="w-30 h-30 object-cover" />
-            <p class="text-center text-sm mt-1 font-semibold">{{ category.name }}</p>
+            <p class="text-center text-sm mt-1 font-semibold">{{ category.id }}</p>
           </div>
         </div>
       </div>

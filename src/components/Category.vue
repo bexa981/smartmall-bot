@@ -1,63 +1,66 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase"; // Ensure this is correctly set up
 import CategoryIcon from '../assets/icons/category.png';
+
 const router = useRouter();
-
-const categories = ref([
-    { name: "Вытяжки", image: CategoryIcon },
-    { name: "Duxovkalar", image: CategoryIcon },
-    { name: "Микроволновки", image: CategoryIcon },
-    { name: "Konditsionerlar", image: CategoryIcon }
-]);
-
+const categories = ref([]);
 const scrollContainer = ref(null);
 
+// **Fetch categories from Firestore**
+const fetchCategories = async () => {
+    try {
+        console.log("Fetching categories...");
+        const categoriesSnapshot = await getDocs(collection(db, "categories"));
+        categories.value = categoriesSnapshot.docs.map(doc => ({
+            id: doc.id,  // Use ID as the category name
+            image: doc.data().image || CategoryIcon // Default image if missing
+        }));
+        console.log("✅ Categories Fetched:", categories.value);
+    } catch (error) {
+        console.error("🔥 Firebase Error:", error.message);
+    }
+};
+
+// **Enable smooth horizontal scrolling**
 onMounted(() => {
+    fetchCategories();
+
     if (scrollContainer.value) {
-        // Enable horizontal scrolling with mouse wheel
         scrollContainer.value.addEventListener("wheel", (event) => {
             event.preventDefault();
             scrollContainer.value.scrollLeft += event.deltaY;
         });
 
-        // Enable touch scrolling for mobile devices
         let isDown = false;
-        let startX;
-        let scrollLeft;
+        let startX, scrollLeft;
 
         scrollContainer.value.addEventListener("mousedown", (e) => {
             isDown = true;
-            scrollContainer.value.classList.add("active");
             startX = e.pageX - scrollContainer.value.offsetLeft;
             scrollLeft = scrollContainer.value.scrollLeft;
         });
 
-        scrollContainer.value.addEventListener("mouseleave", () => {
-            isDown = false;
-            scrollContainer.value.classList.remove("active");
-        });
-
-        scrollContainer.value.addEventListener("mouseup", () => {
-            isDown = false;
-            scrollContainer.value.classList.remove("active");
-        });
+        scrollContainer.value.addEventListener("mouseleave", () => isDown = false);
+        scrollContainer.value.addEventListener("mouseup", () => isDown = false);
 
         scrollContainer.value.addEventListener("mousemove", (e) => {
             if (!isDown) return;
             e.preventDefault();
             const x = e.pageX - scrollContainer.value.offsetLeft;
-            const walk = (x - startX) * 2; // Adjust scroll speed
+            const walk = (x - startX) * 2;
             scrollContainer.value.scrollLeft = scrollLeft - walk;
         });
     }
 });
 
-// Navigate to category detail page
-const goToCategoryDetail = (categoryName) => {
+// **Navigate to category detail page**
+const goToCategoryDetail = (categoryId) => {
     router.push({
         name: 'CategoryDetail',
-        query: { category: categoryName }
+        query: { category: categoryId }
     });
 };
 </script>
@@ -67,12 +70,14 @@ const goToCategoryDetail = (categoryName) => {
         <!-- Scrollable Container -->
         <div ref="scrollContainer"
             class="flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory py-4 px-2 cursor-grab active:cursor-grabbing">
-            <div v-for="(category, index) in categories" :key="index"
-                class="flex flex-col items-center snap-center cursor-pointer" @click="goToCategoryDetail(category.name)">
+            <div v-for="category in categories" :key="category.id"
+                class="flex flex-col items-center snap-center cursor-pointer"
+                @click="goToCategoryDetail(category.id)">
+                
                 <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                     <img :src="category.image" alt="Category Image" class="w-full h-full object-cover rounded-lg" />
                 </div>
-                <span class="text-sm text-center mt-2 whitespace-nowrap">{{ category.name }}</span>
+                <span class="text-sm text-center mt-2 whitespace-nowrap">{{ category.id }}</span>
             </div>
         </div>
     </div>
@@ -93,3 +98,4 @@ const goToCategoryDetail = (categoryName) => {
     cursor: grabbing;
 }
 </style>
+

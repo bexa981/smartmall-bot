@@ -1,35 +1,117 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { ChevronLeftIcon, CreditCardIcon, TagIcon } from '@heroicons/vue/24/solid';
+import { collection, addDoc } from "firebase/firestore";
+import { db } from "../firebase"; // Ensure Firebase is correctly imported
+import { ChevronLeftIcon, CreditCardIcon, ChevronRightIcon, XMarkIcon } from '@heroicons/vue/24/solid';
 import { useI18n } from 'vue-i18n';
 
-const showPaymentModal = ref(false);
-const selectedPaymentMethod = ref(null);
 const { t } = useI18n();
 const router = useRouter();
+
+const showPaymentModal = ref(false);
+const selectedPaymentMethod = ref(localStorage.getItem('selectedPaymentMethod') || '');
 const orderType = ref('delivery');
-const address = ref('Toshkent, Fotografia 3...');
-const entrance = ref('12');
-const floor = ref('21');
-const room = ref('21');
-const courierNote = ref('21');
-const paymentMethod = ref('');
-const promoCode = ref('');
-const totalPrice = ref(1800000);
+const totalPrice = ref(parseFloat(localStorage.getItem('totalCartPrice')) || 0);
+const userId = ref(localStorage.getItem('userId') || generateUserId()); // Unique User ID
 
-const confirmOrder = () => {
-    alert('Buyurtma tasdiqlandi!');
+// Load cart items from localStorage
+const cartItems = ref(JSON.parse(localStorage.getItem('cartItems')) || []);
+
+// Generate a unique user ID
+function generateUserId() {
+    const id = 'user-' + Math.floor(Math.random() * 1000000);
+    localStorage.setItem('userId', id);
+    return id;
+}
+
+// **Save Payment Method to LocalStorage**
+watch(selectedPaymentMethod, (newValue) => {
+    localStorage.setItem('selectedPaymentMethod', newValue);
+});
+
+// **Confirm Order & Save to Firestore**
+const confirmOrder = async () => {
+    if (!selectedPaymentMethod.value) {
+        alert('Iltimos, toʻlov usulini tanlang!');
+        return;
+    }
+
+    const orderData = {
+        userId: userId.value,
+        orderType: orderType.value,
+        paymentMethod: selectedPaymentMethod.value,
+        totalPrice: totalPrice.value,
+        cartItems: cartItems.value,
+        timestamp: new Date().toISOString()
+    };
+
+    try {
+        // Save order to Firestore
+        await addDoc(collection(db, "orders"), orderData);
+        console.log("✅ Order saved to Firestore:", orderData);
+
+        // Send order details to Telegram
+        sendOrderToTelegram(orderData);
+
+        alert('Buyurtma tasdiqlandi!');
+        
+        // Clear cart & order details
+        localStorage.removeItem('cartItems');
+        localStorage.removeItem('totalCartPrice');
+        localStorage.removeItem('selectedPaymentMethod');
+
+        router.push('/'); // Navigate to Home
+    } catch (error) {
+        console.error("🔥 Error saving order:", error.message);
+        alert("Buyurtma saqlashda xatolik yuz berdi.");
+    }
 };
 
-const openPaymentModal = () => {
-    showPaymentModal.value = true;
-};
-const closePaymentModal = () => {
-    showPaymentModal.value = false;
+// **Send Order Details to Telegram**
+const sendOrderToTelegram = async (order) => {
+    const TELEGRAM_BOT_TOKEN = "7545687507:AAG_TGgNnbRQ9S19EPBdSuIpQ59ZWJ5uLfg"; // Replace with your bot token
+    const TELEGRAM_CHAT_ID = "-4796888041"; // Replace with your group ID
+
+    let message = `📦 *Yangi Buyurtma*\n\n`;
+    message += `🆔 *User ID:* ${order.userId}\n`;
+    message += `📍 *Buyurtma turi:* ${order.orderType}\n`;
+    message += `💳 *To'lov usuli:* ${order.paymentMethod}\n`;
+    message += `💰 *Umumiy narx:* ${order.totalPrice.toLocaleString()} UZS\n\n`;
+
+    message += `🛒 *Buyurtma Tafsilotlari:*\n`;
+    order.cartItems.forEach((item, index) => {
+        message += `\n${index + 1}. 🏷 *${item.name}*\n`;
+        message += `   🖼 [Rasm](${item.image})\n`;
+        message += `   💲 *Narxi:* ${item.price} UZS\n`;
+        message += `   🔢 *Soni:* ${item.quantity}\n`;
+    });
+
+    const telegramUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+    const payload = {
+        chat_id: TELEGRAM_CHAT_ID,
+        text: message,
+        parse_mode: "Markdown",
+        disable_web_page_preview: true
+    };
+
+    try {
+        await fetch(telegramUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+        });
+        console.log("✅ Order sent to Telegram");
+    } catch (error) {
+        console.error("🔥 Error sending message to Telegram:", error.message);
+    }
 };
 
-// Select Payment Method
+// **Open & Close Payment Modal**
+const openPaymentModal = () => { showPaymentModal.value = true; };
+const closePaymentModal = () => { showPaymentModal.value = false; };
+
+// **Select Payment Method**
 const selectPaymentMethod = (method) => {
     selectedPaymentMethod.value = method;
     showPaymentModal.value = false;
@@ -40,7 +122,7 @@ const selectPaymentMethod = (method) => {
     <div class="p-4">
         <!-- Header -->
         <div class="flex items-center mb-4">
-            <button @click="router.push('/')" class="p-2">
+            <button @click="router.push('/')" class="p-2 border rounded border-gray-300">
                 <ChevronLeftIcon class="w-6 h-6 text-gray-700" />
             </button>
             <h2 class="text-lg font-bold flex-grow text-center">Buyurtmani rasmiylashtirish</h2>
@@ -49,85 +131,43 @@ const selectPaymentMethod = (method) => {
         <!-- Order Type -->
         <h3 class="text-md font-semibold">Buyurtma turi</h3>
         <div class="mt-2 space-y-2">
-            <div @click="orderType = 'delivery'" class="p-3 border rounded-lg flex justify-between items-center cursor-pointer" :class="{'bg-green-100 border-green-600': orderType === 'delivery'}">
-                <div>
-                    <p class="font-semibold">Yetkazib berish</p>
-                    <p class="text-sm text-gray-600">Buyurtmangizni o‘zimiz yetkazib beramiz.</p>
-                </div>
+            <div @click="orderType = 'delivery'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
+                :class="{ 'bg-green-100 border border-green-600': orderType === 'delivery' }">
+                <p class="font-semibold">Yetkazib berish</p>
                 <input type="radio" v-model="orderType" value="delivery" class="w-5 h-5">
             </div>
-            <div @click="orderType = 'pickup'" class="p-3 border rounded-lg flex justify-between items-center cursor-pointer" :class="{'bg-gray-100': orderType === 'pickup'}">
-                <div>
-                    <p class="font-semibold">Olib ketish</p>
-                    <p class="text-sm text-gray-600">O‘zingizga eng yaqin filialdan olib ketishingiz mumkin.</p>
-                </div>
+            <div @click="orderType = 'pickup'" class="p-3 border-none bg-gray-100 rounded-lg flex justify-between items-center cursor-pointer"
+                :class="{ 'bg-green-100 border border-green-600': orderType === 'pickup' }">
+                <p class="font-semibold">Olib ketish</p>
                 <input type="radio" v-model="orderType" value="pickup" class="w-5 h-5">
-            </div>
-        </div>
-
-        <!-- Address Selection -->
-        <div v-if="orderType === 'delivery'" class="mt-4">
-            <h3 class="text-md font-semibold">Yetkazish manzili</h3>
-            <div class="p-3 border rounded-lg flex flex-col gap-2 mt-2">
-                <p class="font-semibold">{{ address }}</p>
-                <div class="grid grid-cols-3 gap-2 text-sm">
-                    <p><strong>Kirish yoʻlagi:</strong> {{ entrance }}</p>
-                    <p><strong>Qavat:</strong> {{ floor }}</p>
-                    <p><strong>Xona:</strong> {{ room }}</p>
-                </div>
-                <p class="text-sm text-gray-600">Kuryer uchun izoh: {{ courierNote }}</p>
             </div>
         </div>
 
         <!-- Payment Method -->
         <div class="mt-4">
-            <button @click="openPaymentModal" class="flex items-center justify-between w-full p-4 border rounded-lg shadow-md cursor-pointer">
-                <div class="flex items-center space-x-3">
-                    <span class="text-gray-700">{{ selectedPaymentMethod ? selectedPaymentMethod : t('order.selectPaymentMethod') }}</span>
-                </div>
-                <XMarkIcon class="w-6 h-6 text-gray-500" />
+            <button @click="openPaymentModal"
+                class="flex items-center gap-2 w-full p-3 border-none rounded-lg shadow-md cursor-pointer hover:bg-gray-100 transition">
+                <CreditCardIcon class="w-5 h-5 text-gray-700" />
+                <span class="text-gray-700">{{ selectedPaymentMethod ? selectedPaymentMethod : t('order.selectPaymentMethod') }}</span>
+                <ChevronRightIcon class="w-6 h-6 text-gray-500 absolute right-7" />
             </button>
         </div>
-
         <transition name="slide-up">
-            <div v-if="showPaymentModal" class="fixed inset-0 bg-black/50 bg-opacity-50 flex items-end z-50">
+            <div v-if="showPaymentModal" class="fixed inset-0 bg-black/50 flex items-end z-50">
                 <div class="bg-white w-full rounded-t-2xl p-5 shadow-lg">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-lg font-bold">{{ t('order.paymentMethod') }}</h2>
+                        <h2 class="text-[22px] text-green-800 font-bold">Toʻlov usulini tanlang</h2>
                         <button @click="closePaymentModal" class="text-gray-500 hover:text-gray-700">
                             <XMarkIcon class="w-6 h-6" />
                         </button>
                     </div>
-
-                    <!-- Payment Options -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div @click="selectPaymentMethod(t('order.cash'))"
-                            class="p-4 border rounded-lg flex flex-col items-center cursor-pointer hover:bg-gray-100 transition"
-                            :class="{ 'border-green-500': selectedPaymentMethod === t('order.cash') }">
-                            <img src="https://cdn-icons-png.flaticon.com/128/2979/2979493.png" class="w-12 h-12" />
-                            <p class="mt-2 text-center">{{ t('order.cash') }}</p>
-                        </div>
-                        <div @click="selectPaymentMethod(t('order.card'))"
-                            class="p-4 border rounded-lg flex flex-col items-center cursor-pointer hover:bg-gray-100 transition"
-                            :class="{ 'border-green-500': selectedPaymentMethod === t('order.card') }">
-                            <img src="https://cdn-icons-png.flaticon.com/128/1236/1236932.png" class="w-12 h-12" />
-                            <p class="mt-2 text-center">{{ t('order.card') }}</p>
-                        </div>
+                    <div class="space-y-3">
+                        <button @click="selectPaymentMethod('Naqd pul')" class="w-full flex items-center justify-between shadow cursor-pointer gap-5 p-3 bg-gray-100 rounded-lg">Naqd pul orqali to'lash <img class="w-12" src="../assets/icons/dollars.png" alt=""></button>
+                        <button @click="selectPaymentMethod('Karta')" class="w-full flex items-center justify-between shadow cursor-pointer gap-5 p-3 bg-gray-100 rounded-lg">Karta orqali to'lash <img class="w-11" src="../assets/icons/atm-card.png" alt=""></button>
                     </div>
                 </div>
             </div>
         </transition>
-
-        <!-- Promo Code -->
-        <div class="mt-4">
-            <div class="p-3 border rounded-lg flex justify-between items-center cursor-pointer">
-                <div class="flex items-center gap-2">
-                    <TagIcon class="w-5 h-5 text-gray-700" />
-                    <p>Promocode bormi?</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Total Price & Confirm Button -->
         <div class="fixed bottom-0 left-0 w-full bg-white p-4 shadow-lg border-t border-gray-200">
             <div class="flex justify-between items-center mb-2">
@@ -142,7 +182,7 @@ const selectPaymentMethod = (method) => {
 </template>
 
 <style scoped>
-/* No additional styles needed, Tailwind takes care of styling */
+/* Ensure smooth UI */
 /* Slide-up animation */
 .slide-up-enter-active,
 .slide-up-leave-active {

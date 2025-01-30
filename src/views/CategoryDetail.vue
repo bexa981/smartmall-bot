@@ -1,72 +1,141 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../firebase"; // Firebase konfiguratsiyasini tekshirib chiqing
+import { ChevronLeftIcon, HeartIcon as SolidHeartIcon } from '@heroicons/vue/24/solid';
+import { HeartIcon as OutlineHeartIcon } from '@heroicons/vue/24/outline';
 import MenuCategory from '../components/MenuCategory.vue';
 import TotalPrice from '../components/TotalPrice.vue';
 
-import { ChevronLeftIcon, HeartIcon as SolidHeartIcon } from '@heroicons/vue/24/solid';
-import { HeartIcon as OutlineHeartIcon } from '@heroicons/vue/24/outline';
-
 const route = useRoute();
 const router = useRouter();
-const categoryName = route.query.category || "No Category Selected";
+const categoryName = ref(route.query.category || "No Category Selected");
+const categories = ref([]);
+const products = ref([]);
+const selectedProducts = ref([]);
 
-// Local storage for liked products
+// **Yoqtirilgan mahsulotlarni localStorage'dan olish**
 const likedProducts = ref(JSON.parse(localStorage.getItem('likedProducts')) || {});
 
-// Toggle like function
-const toggleLike = (product) => {
-    if (likedProducts.value[product.name]) {
-        delete likedProducts.value[product.name]; // Remove from liked
-    } else {
-        likedProducts.value[product.name] = product; // Add to liked
+// **LocalStorage'ni kuzatib borish**
+watch(likedProducts, (newVal) => {
+    localStorage.setItem('likedProducts', JSON.stringify(newVal));
+}, { deep: true });
+
+// **Firestore'dan kategoriyalar va mahsulotlarni yuklash**
+const fetchCategoriesAndProducts = async () => {
+    try {
+        console.log("🔄 Fetching categories...");
+        const categoriesSnapshot = await getDocs(collection(db, "categories"));
+        categories.value = categoriesSnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.id, // Kategoriya nomi ID sifatida ishlatiladi
+            image: doc.data().image || "https://via.placeholder.com/100" // Agar rasm yo‘q bo‘lsa, default rasm
+        }));
+        console.log("✅ Categories Loaded:", categories.value);
+
+        console.log("🔄 Fetching products...");
+        const productsSnapshot = await getDocs(collection(db, "products"));
+        products.value = productsSnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            description:doc.data().description,
+            price: doc.data().price,
+            image: doc.data().image || "../assets/icons/box.png",
+            category: doc.data().category // Kategoriya maydoni Firestore'da mavjud bo‘lishi kerak
+        }));
+        console.log("✅ Products Loaded:", products.value);
+
+        filterProductsByCategory();
+    } catch (error) {
+        console.error("🔥 Firebase Error:", error.message);
     }
-    localStorage.setItem('likedProducts', JSON.stringify(likedProducts.value));
 };
 
-// Local product data
-const products = {
-    "Вытяжки": [
-        { name: "Кухонная вытяжка Artel-1160", price: 20, image: "https://via.placeholder.com/150" },
-        { name: "Вытяжка Bosch", price: 23, image: "https://via.placeholder.com/150" }
-    ],
-    "Микроволновки": [
-        { name: "Микроволновка Samsung", price: "2,500,000", image: "https://via.placeholder.com/150" },
-        { name: "Микроволновка LG", price: "3,200,000", image: "https://via.placeholder.com/150" }
-    ]
+// **Kategoriya bo‘yicha mahsulotlarni filtrlash**
+const filterProductsByCategory = () => {
+    selectedProducts.value = products.value.filter(product => product.category === categoryName.value);
+    console.log(`🛍️ Products for ${categoryName.value}:`, selectedProducts.value);
 };
 
-const selectedProducts = ref(products[categoryName] || []);
+// **Mahsulotni yoqtirish funksiyasi**
+const toggleLike = (product) => {
+    if (likedProducts.value[product.id]) {
+        delete likedProducts.value[product.id]; // O'chirish
+    } else {
+        likedProducts.value[product.id] = product; // Qo‘shish
+    }
+};
 
-// Go back function
+// **Orqaga qaytish funksiyasi**
 const goBack = () => {
-    router.push('/');
+    router.push('/'); // Bosh sahifaga qaytish
 };
+
+// **Mahsulot tafsilotlariga o'tish**
+const goToProductDetail = (product) => {
+    router.push({
+        name: 'ProductDetail',
+        query: {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            description:product.description,
+            image: product.image
+        }
+    
+        
+    });
+};
+
+// **Kategoriya o‘zgarsa mahsulotlarni yangilash**
+watch(() => route.query.category, (newCategory) => {
+    if (newCategory) {
+        categoryName.value = newCategory;
+        filterProductsByCategory();
+    }
+});
+
+// **Sahifa yuklanganda ma'lumotlarni yuklash**
+onMounted(() => {
+    fetchCategoriesAndProducts();
+});
 </script>
 
 <template>
     <div class="p-3 pb-24 relative">
-        <!-- Back Button -->
+        <!-- **Orqaga qaytish tugmasi** -->
         <button @click="goBack" class="absolute top-0 left-0 p-2 text-gray-700">
             <ChevronLeftIcon class="w-6 h-6" />
         </button>
 
-        <!-- Category Title -->
+        <!-- **Kategoriya nomi** -->
         <h2 class="text-lg font-bold text-center">{{ categoryName }}</h2>
 
-        <!-- Product Grid -->
-        <div class="mt-6 grid grid-cols-2 gap-3">
-            <div v-for="product in selectedProducts" :key="product.name"
+        <!-- **Yuklanish xabari** -->
+        <div v-if="categories.length === 0 || products.length === 0" class="text-center text-gray-500">
+            <p>Loading...</p>
+        </div>
+
+        <!-- **Mahsulotlar mavjud emas** -->
+        <div v-if="selectedProducts.length === 0" class="text-center text-gray-500">
+            <p>No products found in this category.</p>
+        </div>
+
+        <!-- **Mahsulotlar** -->
+        <div v-else class="mt-6 grid grid-cols-2 gap-3">
+            <div v-for="product in selectedProducts" :key="product.id"
                 class="bg-white p-3 rounded-lg shadow-md cursor-pointer"
-                @click="router.push({ name: 'ProductDetail', query: { name: product.name, price: product.price, image: product.image } })">
+                @click="goToProductDetail(product)">
                 
                 <div class="relative">
-                    <img :src="product.image" class="w-full h-40 object-cover rounded-lg" />
+                    <img :src="product.image" class="w-full h-40 object-contain rounded-lg" />
                     
-                    <!-- Like Button -->
+                    <!-- **Yoqtirish tugmasi** -->
                     <button @click.stop="toggleLike(product)"
                         class="absolute top-0 right-0 bg-white rounded-full p-1 shadow-md">
-                        <SolidHeartIcon v-if="likedProducts[product.name]" class="w-6 h-6 text-red-600" />
+                        <SolidHeartIcon v-if="likedProducts[product.id]" class="w-6 h-6 text-red-600" />
                         <OutlineHeartIcon v-else class="w-6 h-6 text-gray-500" />
                     </button>
                 </div>
@@ -75,34 +144,21 @@ const goBack = () => {
             </div>
         </div>
 
-        <!-- Floating Category Menu Button -->
+        <!-- **Kategoriya menyusi va umumiy narx** -->
         <MenuCategory />
         <TotalPrice />
     </div>
 </template>
 
 <style scoped>
-/* Ensure bottom buttons are fixed at the bottom of the screen */
-.fixed-bottom {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: white;
-    padding: 1rem;
-    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
+/* Mahsulotlar grid */
 .grid-cols-2 {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: .5rem;
 }
 
-/* Truncate product names to max 2 lines */
+/* Matnni ikki qatorda kesish */
 .truncate-2-lines {
     display: -webkit-box;
     -webkit-line-clamp: 2;

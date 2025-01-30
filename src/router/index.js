@@ -6,8 +6,10 @@ import Cart from "../views/Cart.vue";
 import SupportChat from "../views/SupportChat.vue";
 import SearchDetail from "../views/SearchDetail.vue";
 import OrderMain from "../views/OrderMain.vue";
+import Login from '../views/Login.vue';
 const routes = [
   { path: "/", component: Home },
+  { path: "/login", name: "Login", component: Login },
 
   {
     path: "/product-detail",
@@ -87,6 +89,7 @@ const routes = [
     component: () => import("../views/MapSelect.vue"),
   },
   { path: "/order-main", component: OrderMain },
+  
 ];
 
 const router = createRouter({

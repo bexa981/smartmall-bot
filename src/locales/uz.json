@@ -28,7 +28,8 @@
     "notifications": "Bildirishmalar",
     "language": "Til",
     "aboutUs": "Biz haqimizda",
-    "contactUs": "Aloqa uchun"
+    "contactUs": "Aloqa uchun",
+    "logout": "Chiqish"
   },
   "language": {
     "title": "Til",
@@ -73,5 +74,11 @@
     "paymentMethod": "To'lov usuli",
     "cash": "Naqd pul orqali to'lash",
     "card": "Karta orqali to'lash"
-}
+},
+"profile": {
+    "title": "Shaxsiy ma'lumotlarim",
+    "enterName": "Ismingizni kiriting",
+    "saveChanges": "O'zgarishlarni saqlash",
+    "savedMessage": "Ma'lumotlar saqlandi!"
+  }
 }
