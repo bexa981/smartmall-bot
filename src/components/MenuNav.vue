@@ -1,12 +1,13 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { ref, onMounted, onUnmounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import {XMarkIcon , GlobeAltIcon,PhoneIcon, UserIcon ,ClipboardDocumentCheckIcon ,ExclamationCircleIcon, HeartIcon, MapPinIcon,BellAlertIcon} from '@heroicons/vue/24/outline'
 import {ArrowLeftEndOnRectangleIcon} from '@heroicons/vue/24/solid'
 const router = useRouter();
 const { t } = useI18n();
 const emit = defineEmits(['closeMenu']);
-
+const menuRef = ref(null);
 // **🔹 Navigation function**
 const navigateTo = (path) => {
   router.push(path);
@@ -22,10 +23,24 @@ const logoutAndRedirect = () => {
   // Redirect to Login page
 //   router.push('/login');
 };
+const handleOutsideClick = (event) => {
+  if (menuRef.value && !menuRef.value.contains(event.target)) {
+    emit('closeMenu');
+  }
+};
+
+onMounted(() => {
+  document.addEventListener("mousedown", handleOutsideClick);
+});
+
+// **🔹 Remove event listener when unmounted**
+onUnmounted(() => {
+  document.removeEventListener("mousedown", handleOutsideClick);
+});
 </script>
 
-<template>
-  <div class="fixed left-0 top-0 w-72 h-full bg-white shadow-lg p-5 flex z-10 flex-col">
+<template >
+  <div class="fixed left-0 top-0 w-72 h-full bg-white shadow-lg p-5 flex z-10 flex-col" ref="menuRef">
     <!-- Close Button -->
     <button @click="emit('closeMenu')" class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
       <XMarkIcon class="w-6  h-6 hover:bg-gray-100 rounded cursor-pointer transition"/> 
@@ -90,10 +105,13 @@ const logoutAndRedirect = () => {
   color: #374151;
   font-size: 16px;
   transition: background 0.3s;
+  cursor: pointer;
 }
 
 .menu-item:hover {
   background-color: #f3f4f6;
+  color: rgb(1, 68, 1);
+  
 }
 
 /* 🔹 Exit Button */

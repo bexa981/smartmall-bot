@@ -44,20 +44,40 @@ const goToProductDetail = (product) => {
             name: product.name,
             price: product.price,
             image: product.image,
-            description:product.description
+            description: product.description
         }
     });
 };
 const toggleLike = (product) => {
-    if (likedProducts.value[product.id]) {
-        delete likedProducts.value[product.id]; // Remove from liked
-    } else {
-        likedProducts.value[product.id] = product; // Add to liked
+    // Ensure likedProducts is always an object
+    if (!likedProducts.value || typeof likedProducts.value !== 'object') {
+        likedProducts.value = {};
     }
-};
 
+    if (likedProducts.value[product.id]) {
+        // 🔹 Remove from liked products
+        delete likedProducts.value[product.id];
+    } else {
+        // 🔹 Add product to liked
+        likedProducts.value[product.id] = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            image: product.image,
+            description: product.description
+        };
+    }
+
+    // 🔹 Save updated liked products to localStorage
+    localStorage.setItem("likedProducts", JSON.stringify(likedProducts.value));
+
+    // 🔹 Force Vue to detect changes
+    likedProducts.value = { ...likedProducts.value };
+};
 // **Fetch Data When Component Mounts**
 onMounted(() => {
+    const storedLikedProducts = localStorage.getItem('likedProducts');
+    likedProducts.value = storedLikedProducts ? JSON.parse(storedLikedProducts) : {};
     fetchCategoriesAndProducts();
 });
 </script>
@@ -73,10 +93,9 @@ onMounted(() => {
 
             <!-- 🔹 Scrollable Product List 🔹 -->
             <div class="overflow-x-auto flex space-x-4 py-2 scrollbar-hide" ref="scrollContainer">
-                <div v-for="product in products.filter(p => p.category === category.id)" 
-                    :key="product.id"
+                <div v-for="product in products.filter(p => p.category === category.id)" :key="product.id"
                     class="bg-white p-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
-                    @click="goToProductDetail(product)">  
+                    @click="goToProductDetail(product)">
 
                     <div class="relative">
                         <img :src="product.image" class="w-40 h-40 object-contain rounded-lg" />

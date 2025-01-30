@@ -8,26 +8,38 @@ const favouriteProducts = ref([]);
 
 // Load favourite products from localStorage
 onMounted(() => {
-    const storedFavourites = JSON.parse(localStorage.getItem("likedProducts")) || [];
-    favouriteProducts.value = storedFavourites;
+    const storedFavourites = localStorage.getItem("likedProducts");
+    favouriteProducts.value = storedFavourites ? JSON.parse(storedFavourites) : {};
 });
-
 // Navigate to product details
 const goToProductDetail = (product) => {
     router.push({
         name: 'ProductDetail',
         query: {
+            id: product.id,
             name: product.name,
             price: product.price,
-            image: product.image
+            image: product.image,
+            description: product.description
         }
     });
 };
 
 // Remove product from favourites
 const removeFromFavourites = (product) => {
-    favouriteProducts.value = favouriteProducts.value.filter(p => p.name !== product.name);
+    // Check if favouriteProducts is valid
+    if (!favouriteProducts.value || typeof favouriteProducts.value !== 'object') {
+        return;
+    }
+
+    // 🔹 Remove the product from favouriteProducts
+    delete favouriteProducts.value[product.id];
+
+    // 🔹 Update localStorage
     localStorage.setItem("likedProducts", JSON.stringify(favouriteProducts.value));
+
+    // 🔹 Force UI update
+    favouriteProducts.value = { ...favouriteProducts.value };
 };
 
 // Go back function
@@ -40,7 +52,8 @@ const goBack = () => {
     <div class="p-4">
         <!-- Back Button & Title -->
         <div class="flex items-center justify-between">
-            <button @click="goBack" class="p-1 bg-gray-100 border cursor-pointer border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">
+            <button @click="goBack"
+                class="p-1 bg-gray-100 border cursor-pointer border-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50">
                 <ChevronLeftIcon class="w-5 h-5 text-gray-500" />
             </button>
             <h2 class="text-lg font-bold text-center flex-1">Sevimlilar</h2>
@@ -51,10 +64,10 @@ const goBack = () => {
             <div v-for="product in favouriteProducts" :key="product.name"
                 class="bg-white p-3 rounded-lg shadow-md cursor-pointer transition-transform hover:scale-105"
                 @click="goToProductDetail(product)">
-                
+
                 <div class="relative">
-                    <img :src="product.image" class="w-full h-40 object-cover rounded-lg" />
-                    
+                    <img :src="product.image" class="w-full h-40 object-contain rounded-lg" />
+
                     <!-- Remove from Favourites -->
                     <button @click.stop="removeFromFavourites(product)"
                         class="absolute top-2 right-2 bg-white rounded-full p-1 shadow-md">

@@ -2,7 +2,7 @@
 import { ref, computed } from 'vue';
 import '../assets/tailwind.css';
 import Account from '../components/Account.vue';
-import Location from '../components/Location.vue';
+// import Location from '../components/Location.vue';
 import Support from '../components/Support.vue';
 import Search from '../components/Search.vue';
 import Category from '../components/Category.vue';
@@ -23,7 +23,8 @@ const products = ref([
   <div class="p-2 bg-white-50 min-h-screen">
     <nav class="flex justify-between items-center">
       <Account />
-      <Location />
+      <!-- <Location /> -->
+      <h2 class="text-green-800 text-2xl smartm font-bold">Smartmall</h2>
       <Support />
     </nav>
 
@@ -38,4 +39,8 @@ const products = ref([
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.smartm{
+  font-family: "Righteous", serif;
+}
+</style>
