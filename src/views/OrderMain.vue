@@ -59,7 +59,7 @@ const confirmOrder = async () => {
     try {
         // Save order to Firestore
         await addDoc(collection(db, "orders"), orderData);
-        console.log("✅ Order saved to Firestore:", orderData);
+        // console.log("✅ Order saved to Firestore:", orderData);
 
         // Send order details to Telegram
         sendOrderToTelegram(orderData);

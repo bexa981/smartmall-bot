@@ -12,13 +12,13 @@ const scrollContainer = ref(null);
 // **Fetch categories from Firestore**
 const fetchCategories = async () => {
     try {
-        console.log("Fetching categories...");
+        // console.log("Fetching categories...");
         const categoriesSnapshot = await getDocs(collection(db, "categories"));
         categories.value = categoriesSnapshot.docs.map(doc => ({
             id: doc.id,  // Use ID as the category name
             image: doc.data().image || CategoryIcon // Default image if missing
         }));
-        console.log("✅ Categories Fetched:", categories.value);
+        // console.log("✅ Categories Fetched:", categories.value);
     } catch (error) {
         console.error("🔥 Firebase Error:", error.message);
     }
@@ -71,13 +71,13 @@ const goToCategoryDetail = (categoryId) => {
         <div ref="scrollContainer"
             class="flex space-x-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory py-4 px-2 cursor-grab active:cursor-grabbing">
             <div v-for="category in categories" :key="category.id"
-                class="flex flex-col items-center snap-center cursor-pointer"
+                class="flex cat-main flex-col items-center snap-center cursor-pointer"
                 @click="goToCategoryDetail(category.id)">
                 
-                <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                <div class="w-22 h-20 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                     <img :src="category.image" alt="Category Image" class="w-full h-full object-cover rounded-lg" />
                 </div>
-                <span class="text-sm text-center mt-2 whitespace-nowrap">{{ category.id }}</span>
+                <span class="text-sm text-center mt-2 ">{{ category.id }}</span>
             </div>
         </div>
     </div>
@@ -88,7 +88,21 @@ const goToCategoryDetail = (categoryId) => {
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }
-
+.cat-main{
+    box-shadow: 0px 2px 6px rgb(171, 170, 170);
+    padding:3px;
+    border-radius: 7px;
+    height: 120px;
+    width: 100px;
+    background-color: white;
+    transition: .3s;
+}
+.cat-main:hover{
+    box-shadow: 1px 2px 7px gray;
+}
+.cat-main span{
+ width: 100px;
+}
 /* Enable smooth touch-based scrolling */
 .cursor-grab {
     cursor: grab;

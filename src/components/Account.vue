@@ -13,7 +13,7 @@ const toggleMenu = () => {
   <div class="relative h-[40px]">
     <!-- Clickable User Icon -->
     <button @click="toggleMenu">
-      <UserCircleIcon class="w-10 h-10 text-green-800 hover:text-gray-800 transition duration-300" />
+      <UserCircleIcon class="w-10 acc-main h-10 text-green-800  cursor-pointer transition duration-300" />
     </button>
     
     <!-- Menu Navigation (Opens on Click) -->
@@ -24,7 +24,10 @@ const toggleMenu = () => {
 </template>
 
 <style scoped>
-
+.acc-main{
+  background-color: white;
+  border-radius: 50%;
+}
 .slide-enter-active, .slide-leave-active {
   transition: transform 0.3s ease-in-out;
 }

@@ -15,13 +15,13 @@ const categories = ref([]);
 
 const fetchCategories = async () => {
     try {
-        console.log("Fetching categories...");
+        // console.log("Fetching categories...");
         const categoriesSnapshot = await getDocs(collection(db, "categories"));
         categories.value = categoriesSnapshot.docs.map(doc => ({
             id: doc.id,  // Use ID as the category name
             image: doc.data().image || CategoryIcon // Default image if missing
         }));
-        console.log("✅ Categories Fetched:", categories.value);
+        // console.log("✅ Categories Fetched:", categories.value);
     } catch (error) {
         console.error("🔥 Firebase Error:", error.message);
     }
@@ -65,7 +65,7 @@ onMounted(() => {
 
         <div class="grid grid-cols-3 gap-4 mt-4 max-h-[50vh] overflow-y-auto">
           <div v-for="category in categories" :key="category.id" @click="goToCategoryDetail(category.id)" class="flex flex-col items-center cursor-pointer">
-            <img :src="category.image" class="w-30 h-30 object-cover" />
+            <img :src="category.image" class="w-25 h-25 object-contain" />
             <p class="text-center text-sm mt-1 font-semibold">{{ category.id }}</p>
           </div>
         </div>

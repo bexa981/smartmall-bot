@@ -26,16 +26,16 @@ watch(likedProducts, (newVal) => {
 // **Firestore'dan kategoriyalar va mahsulotlarni yuklash**
 const fetchCategoriesAndProducts = async () => {
     try {
-        console.log("🔄 Fetching categories...");
+        // console.log("🔄 Fetching categories...");
         const categoriesSnapshot = await getDocs(collection(db, "categories"));
         categories.value = categoriesSnapshot.docs.map(doc => ({
             id: doc.id,
             name: doc.id, // Kategoriya nomi ID sifatida ishlatiladi
             image: doc.data().image || "https://via.placeholder.com/100" // Agar rasm yo‘q bo‘lsa, default rasm
         }));
-        console.log("✅ Categories Loaded:", categories.value);
+        // console.log("✅ Categories Loaded:", categories.value);
 
-        console.log("🔄 Fetching products...");
+        // console.log("🔄 Fetching products...");
         const productsSnapshot = await getDocs(collection(db, "products"));
         products.value = productsSnapshot.docs.map(doc => ({
             id: doc.id,
@@ -45,7 +45,7 @@ const fetchCategoriesAndProducts = async () => {
             image: doc.data().image || "../assets/icons/box.png",
             category: doc.data().category // Kategoriya maydoni Firestore'da mavjud bo‘lishi kerak
         }));
-        console.log("✅ Products Loaded:", products.value);
+        // console.log("✅ Products Loaded:", products.value);
 
         filterProductsByCategory();
     } catch (error) {

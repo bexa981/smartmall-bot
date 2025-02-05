@@ -24,14 +24,14 @@ const fetchCategoriesAndProducts = async () => {
         console.log("Fetching categories...");
         const categoriesSnapshot = await getDocs(collection(db, "categories"));
         categories.value = categoriesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log("✅ Categories Fetched:", categories.value);
+        // console.log("✅ Categories Fetched:", categories.value);
 
         console.log("Fetching products...");
         const productsSnapshot = await getDocs(collection(db, "products"));
         products.value = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        console.log("✅ Products Fetched:", products.value);
+        // console.log("✅ Products Fetched:", products.value);
     } catch (error) {
-        console.error("🔥 Firebase Error:", error.message);
+        // console.error("🔥 Firebase Error:", error.message);
     }
 };
 
@@ -89,12 +89,12 @@ onMounted(() => {
 
     <div v-else>
         <div v-for="category in categories" :key="category.id">
-            <h2 class="text-lg font-bold mb-2">{{ category.id }}</h2> <!-- 🔥 Fixed category name display -->
+            <!-- <h2 class="text-lg font-bold mb-2">{{ category.id }}</h2> 🔥 Fixed category name display -->
 
             <!-- 🔹 Scrollable Product List 🔹 -->
-            <div class="overflow-x-auto flex space-x-4 py-2 scrollbar-hide" ref="scrollContainer">
+            <div class=" flex space-x-2 justify-evenly flex-wrap py-2 " >
                 <div v-for="product in products.filter(p => p.category === category.id)" :key="product.id"
-                    class="bg-white p-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
+                    class="bg-white w-[180px] p-2 mt-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
                     @click="goToProductDetail(product)">
 
                     <div class="relative">

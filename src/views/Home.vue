@@ -13,10 +13,7 @@ import TotalPrice from '../components/TotalPrice.vue';
 const search = ref('');
 const categories = ref(["Вытяжки", "Duxovkalar", "Mikrovolnovkalar", "Muzlatgichlar"]);
 const selectedCategory = ref("Вытяжки");
-const products = ref([
-  { name: "Кухонная вытяжка Artel-1160", price: "1,800,000", image: "https://via.placeholder.com/150", category: "Вытяжки" },
-  { name: "Микроволновка Samsung", price: "2,500,000", image: "https://via.placeholder.com/150", category: "Mikrovolnovkalar" }
-]);
+const products = ref([]);
 </script>
 
 <template>
@@ -40,7 +37,7 @@ const products = ref([
 </template>
 
 <style scoped>
-.smartm{
+.smartm {
   font-family: "Righteous", serif;
 }
 </style>
