@@ -94,7 +94,7 @@ onMounted(() => {
             <!-- 🔹 Scrollable Product List 🔹 -->
             <div class=" flex space-x-2 justify-evenly flex-wrap py-2 " >
                 <div v-for="product in products.filter(p => p.category === category.id)" :key="product.id"
-                    class="bg-white w-[180px] p-2 mt-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
+                    class="bg-white prod-main w-[180px] p-2 mt-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
                     @click="goToProductDetail(product)">
 
                     <div class="relative">
@@ -143,5 +143,14 @@ onMounted(() => {
     text-overflow: ellipsis;
     white-space: normal;
     max-width: 100%;
+}
+@media only screen and (max-width: 412px) {
+ .prod-main{
+   width: 90%!important;
+   margin-left: 10px;
+ }
+ .prod-main img{
+    width: 100%;
+ }
 }
 </style>

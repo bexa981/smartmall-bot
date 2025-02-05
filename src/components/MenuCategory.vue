@@ -90,5 +90,6 @@ onMounted(() => {
   background: #ccc;
   border-radius: 5px;
 }
+
 </style>
 

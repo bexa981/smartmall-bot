@@ -115,8 +115,9 @@ onMounted(() => {
                 </div>
             </div>
         </div>
-        <div v-else class="text-center text-gray-500">
-            <p>Loading product...</p>
+        <div v-else class="text-center flex flex-col justify-center text-gray-500">
+            <p >Mahsulotlar yuklanmoqda </p>
+            <img width="100px" src="https://cdn.pixabay.com/animation/2022/07/29/03/42/03-42-05-37_512.gif" alt="">
         </div>
     </div>
 
