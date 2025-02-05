@@ -150,7 +150,7 @@ onUnmounted(() => {
             <h2 class="text-lg font-bold mb-2">{{ category.name }}</h2>
 
             <!-- 🔹 Product List -->
-            <div class="flex space-x-2 justify-evenly flex-wrap py-2">
+            <div class="flex space-x-1 justify-evenly flex-wrap py-2">
                 <div v-for="product in products.filter(p => p.category === category.id)" :key="product.id"
                     class="bg-white prod-main w-[180px] p-2 mt-2 rounded-lg shadow-md flex flex-col items-center min-w-[180px] snap-center cursor-pointer"
                     @click="goToProductDetail(product)">
@@ -214,5 +214,10 @@ onUnmounted(() => {
     transition: all 0.5s ease-in-out;
     z-index: 9999;
     pointer-events: none;
+}
+@media only screen and (max-width: 403px) {
+ .prod-main{
+   width: 80%;
+ }
 }
 </style>
