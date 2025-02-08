@@ -1,17 +1,19 @@
 <script setup>
-import { ref,watch  } from 'vue';
-import { CheckCircleIcon, ChevronLeftIcon } from '@heroicons/vue/24/solid';
+import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 
 const phoneNumber = ref("+998");
 const showAlert = ref(false);
+const inputRef = ref(null);
 
 const emit = defineEmits(["login-success"]);
-// Ensure the user cannot delete "+998"
+
 const formatPhoneNumber = () => {
     if (!phoneNumber.value.startsWith("+998")) {
         phoneNumber.value = "+998";
     }
-}
+};
+
 const savePhoneNumber = () => {
     if (phoneNumber.value.length >= 13) { // Ensure at least 9 digits after +998
         localStorage.setItem("userPhone", phoneNumber.value);
@@ -23,6 +25,27 @@ const savePhoneNumber = () => {
         }, 1500);
     }
 };
+
+// **iOS Fix: Input bosilganda ekranni yuqoriga surish**
+const handleFocus = () => {
+    setTimeout(() => {
+        inputRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+};
+
+// **Klaviatura yopilganda ekran o‘lchamini tiklash**
+const handleResize = () => {
+    document.body.style.height = window.innerHeight + "px";
+};
+
+onMounted(() => {
+    window.addEventListener("resize", handleResize);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener("resize", handleResize);
+});
+
 watch(phoneNumber, formatPhoneNumber);
 </script>
 
@@ -30,7 +53,6 @@ watch(phoneNumber, formatPhoneNumber);
     <div class="fixed mainPhone inset-0 bg-black/20 flex justify-center items-end">
         <transition name="slide-up">
             <div class="w-full bg-white p-6 rounded-t-3xl shadow-lg">
-                <!-- Title -->
                 <h2 class="text-xl font-semibold text-center">Telefon raqamingizni kiriting</h2>
 
                 <!-- Phone Input -->
@@ -38,7 +60,8 @@ watch(phoneNumber, formatPhoneNumber);
                     <img src="https://www.svgrepo.com/show/405649/flag-for-flag-uzbekistan.svg" 
                          alt="Uzbekistan Flag" class="w-7 h-7 mr-2" />
                     <input type="text" v-model="phoneNumber" 
-                           @input="formatPhoneNumber"
+                           ref="inputRef"
+                           @focus="handleFocus"
                            placeholder="+998" 
                            class="w-full outline-none" />
                 </div>
