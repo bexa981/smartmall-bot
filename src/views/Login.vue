@@ -1,10 +1,11 @@
 <script setup>
-import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
+import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { CheckCircleIcon } from '@heroicons/vue/24/solid';
 
 const phoneNumber = ref("+998");
 const showAlert = ref(false);
 const inputRef = ref(null);
+const containerRef = ref(null);
 
 const emit = defineEmits(["login-success"]);
 
@@ -26,31 +27,39 @@ const savePhoneNumber = () => {
     }
 };
 
-// **iOS Fix: Input bosilganda ekranni yuqoriga surish**
-const handleFocus = () => {
-    setTimeout(() => {
-        inputRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 300);
+// **iOS Fix: Input bosilganda ekranni yuqoriga ko‘tarish**
+const adjustForKeyboard = () => {
+    if (window.visualViewport) {
+        const viewportHeight = window.visualViewport.height;
+        containerRef.value.style.height = `${viewportHeight}px`;
+        nextTick(() => {
+            inputRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
+        });
+    }
 };
 
-// **Klaviatura yopilganda ekran o‘lchamini tiklash**
-const handleResize = () => {
-    document.body.style.height = window.innerHeight + "px";
+// **Klaviatura yopilganda ekranni tiklash**
+const resetView = () => {
+    containerRef.value.style.height = "100vh";
 };
 
 onMounted(() => {
-    window.addEventListener("resize", handleResize);
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener("resize", adjustForKeyboard);
+    }
 });
 
 onBeforeUnmount(() => {
-    window.removeEventListener("resize", handleResize);
+    if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", adjustForKeyboard);
+    }
 });
 
 watch(phoneNumber, formatPhoneNumber);
 </script>
 
 <template>
-    <div class="fixed mainPhone inset-0 bg-black/20 flex justify-center items-end">
+    <div ref="containerRef" class="fixed mainPhone inset-0 bg-black/20 flex justify-center items-end">
         <transition name="slide-up">
             <div class="w-full bg-white p-6 rounded-t-3xl shadow-lg">
                 <h2 class="text-xl font-semibold text-center">Telefon raqamingizni kiriting</h2>
@@ -59,9 +68,10 @@ watch(phoneNumber, formatPhoneNumber);
                 <div class="flex items-center border border-gray-200 bg-gray-100 p-3 rounded-lg mt-4">
                     <img src="https://www.svgrepo.com/show/405649/flag-for-flag-uzbekistan.svg" 
                          alt="Uzbekistan Flag" class="w-7 h-7 mr-2" />
-                    <input type="text" v-model="phoneNumber" 
+                    <input type="number" v-model="phoneNumber" 
                            ref="inputRef"
-                           @focus="handleFocus"
+                           @focus="adjustForKeyboard"
+                           @blur="resetView"
                            placeholder="+998" 
                            class="w-full outline-none" />
                 </div>
