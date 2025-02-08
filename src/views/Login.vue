@@ -9,29 +9,31 @@ const containerRef = ref(null);
 
 const emit = defineEmits(["login-success"]);
 
+// **Telefon raqamini "+998" formatida ushlab turish**
 const formatPhoneNumber = () => {
     if (!phoneNumber.value.startsWith("+998")) {
         phoneNumber.value = "+998";
     }
 };
 
+// **Telefon raqamini saqlash va muvaffaqiyatli login qilish**
 const savePhoneNumber = () => {
-    if (phoneNumber.value.length >= 13) { // Ensure at least 9 digits after +998
+    if (phoneNumber.value.length >= 13) { // "+998" dan keyin kamida 9 ta raqam bo‘lishi kerak
         localStorage.setItem("userPhone", phoneNumber.value);
         showAlert.value = true;
 
         setTimeout(() => {
             showAlert.value = false;
-            emit("login-success"); // Notify App.vue that login is complete
+            emit("login-success"); // App.vue-ga login event'ini jo‘natish
         }, 1500);
     }
 };
 
-// **iOS Fix: Input bosilganda ekranni yuqoriga ko‘tarish**
+// **iOS Fix: Klaviatura ochilganda inputni ko‘tarish va ekranni moslashtirish**
 const adjustForKeyboard = () => {
     if (window.visualViewport) {
         const viewportHeight = window.visualViewport.height;
-        containerRef.value.style.height = `${viewportHeight}px`;
+        containerRef.value.style.height = `${viewportHeight}px`; // Ekranni vizual joylashuvga moslash
         nextTick(() => {
             inputRef.value?.scrollIntoView({ behavior: "smooth", block: "center" });
         });
@@ -55,6 +57,7 @@ onBeforeUnmount(() => {
     }
 });
 
+// **Telefon raqam formatini kuzatish**
 watch(phoneNumber, formatPhoneNumber);
 </script>
 
@@ -64,23 +67,23 @@ watch(phoneNumber, formatPhoneNumber);
             <div class="w-full bg-white p-6 rounded-t-3xl shadow-lg">
                 <h2 class="text-xl font-semibold text-center">Telefon raqamingizni kiriting</h2>
 
-                <!-- Phone Input -->
+                <!-- Telefon Raqam Input -->
                 <div class="flex items-center border border-gray-200 bg-gray-100 p-3 rounded-lg mt-4">
                     <img src="https://www.svgrepo.com/show/405649/flag-for-flag-uzbekistan.svg" 
                          alt="Uzbekistan Flag" class="w-7 h-7 mr-2" />
-                    <input type="number" v-model="phoneNumber" 
+                    <input type="text" v-model="phoneNumber" 
                            ref="inputRef"
                            @focus="adjustForKeyboard"
                            @blur="resetView"
                            placeholder="+998" 
-                           class="w-full outline-none" />
+                           class="w-full outline-none bg-transparent" />
                 </div>
                 <p class="text-center text-gray-500 text-sm mt-2">
                     Davom etish tugmasini bosish orqali siz bizning 
                     <a href="#" class="text-blue-500">Foydalanish qoidalarimizni</a> qabul qilasiz.
                 </p>
 
-                <!-- Submit Button -->
+                <!-- Davom Etish Tugmasi -->
                 <button @click="savePhoneNumber" 
                         class="mt-4 w-full bg-green-700 text-white py-3 rounded-lg text-center">
                     Davom etish
@@ -121,11 +124,12 @@ watch(phoneNumber, formatPhoneNumber);
 .fade-enter-from, .fade-leave-to {
     opacity: 0;
 }
-.mainPhone{
+
+/* Background */
+.mainPhone {
     background-image: url(https://thumbs.dreamstime.com/b/online-shopping-11763626.jpg);
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
-    
 }
 </style>
