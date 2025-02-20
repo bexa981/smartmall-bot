@@ -56,7 +56,7 @@ const fetchCategoriesAndProducts = async () => {
 // **Kategoriya bo‘yicha mahsulotlarni filtrlash**
 const filterProductsByCategory = () => {
     selectedProducts.value = products.value.filter(product => product.category === categoryName.value);
-    console.log(`🛍️ Products for ${categoryName.value}:`, selectedProducts.value);
+    // console.log(`🛍️ Products for ${categoryName.value}:`, selectedProducts.value);
 };
 
 // **Mahsulotni yoqtirish funksiyasi**

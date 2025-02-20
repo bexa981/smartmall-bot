@@ -1,13 +1,14 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
-import { useRouter } from "vue-router";
+import { ref, onMounted, computed, watch } from "vue";
+import { useRouter, useRoute } from "vue-router";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase";
+
 import { XMarkIcon, MagnifyingGlassIcon, ChevronLeftIcon, HeartIcon } from "@heroicons/vue/24/solid";
-import { ClockIcon } from "@heroicons/vue/24/outline";
 import { useI18n } from "vue-i18n";
 
 const router = useRouter();
+const route = useRoute();
 const { t } = useI18n();
 
 const searchQuery = ref("");
@@ -15,37 +16,38 @@ const searchHistory = ref([]);
 const filteredProducts = ref([]);
 const filteredCategories = ref([]);
 const allProducts = ref([]);
-const allCategories = ref([]); // 🔹 Store all categories from Firebase
+const allCategories = ref([]);
 const likedProducts = ref(JSON.parse(localStorage.getItem("likedProducts")) || {});
+const selectedCategory = ref(null);
 
-// 🔹 Load search history from localStorage
 onMounted(async () => {
   searchHistory.value = JSON.parse(localStorage.getItem("searchHistory")) || [];
   await fetchCategoriesAndProducts();
+  if (route.query.id) {
+    selectedCategory.value = allCategories.value.find(c => c.id === route.query.id) || null;
+  }
 });
 
-// 🔹 Fetch categories & products from Firebase
+watch(() => route.query.id, async (newCategoryId) => {
+  if (newCategoryId) {
+    selectedCategory.value = allCategories.value.find(c => c.id === newCategoryId) || null;
+  }
+}, { immediate: true });
+
 const fetchCategoriesAndProducts = async () => {
   try {
-    // Fetch categories
     const categoriesSnapshot = await getDocs(collection(db, "categories"));
-    allCategories.value = categoriesSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    allCategories.value = categoriesSnapshot.docs.map(doc => 
+    ({ id: doc.id,
+      image: doc.data().image || CategoryIcon }));
 
-    // Fetch products
     const productsSnapshot = await getDocs(collection(db, "products"));
-    allProducts.value = productsSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    allProducts.value = productsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   } catch (error) {
-    console.error("🔥 Error fetching data from Firebase:", error.message);
+    console.error("🔥 Firebase'dan ma'lumot olishda xatolik:", error.message);
   }
 };
 
-// 🔹 Save search to history & filter results
 const saveSearch = () => {
   if (searchQuery.value.trim() !== "") {
     searchHistory.value.unshift(searchQuery.value);
@@ -55,19 +57,17 @@ const saveSearch = () => {
   }
 };
 
-// 🔹 Filter products & categories as user types
 const filterResults = () => {
   const query = searchQuery.value.trim().toLowerCase();
   if (query) {
-    filteredProducts.value = allProducts.value.filter((p) => p.name.toLowerCase().includes(query));
-    filteredCategories.value = allCategories.value.filter((c) => c.name.toLowerCase().includes(query));
+    filteredProducts.value = allProducts.value.filter(p => p.name?.toLowerCase().includes(query));
+    filteredCategories.value = allCategories.value.filter(c => c.name?.toLowerCase().includes(query));
   } else {
     filteredProducts.value = [];
     filteredCategories.value = [];
   }
 };
 
-// 🔹 Navigate to product detail
 const goToProductDetail = (product) => {
   router.push({
     name: "ProductDetail",
@@ -81,34 +81,23 @@ const goToProductDetail = (product) => {
   });
 };
 
-// 🔹 Navigate to category detail
-const goToCategoryDetail = (category) => {
-  router.push({
-    name: "CategoryDetail",
-    query: { id: category.id, name: category.name },
-  });
+const goToCategoryDetail = (categoryId) => {
+    router.push({
+        name: 'CategoryDetail',
+        query: { category: categoryId }
+    });
 };
-
-// 🔹 Clear search input & results
 const clearSearch = () => {
   searchQuery.value = "";
   filteredProducts.value = [];
   filteredCategories.value = [];
 };
 
-// 🔹 Remove single search history item
 const removeHistoryItem = (index) => {
   searchHistory.value.splice(index, 1);
   localStorage.setItem("searchHistory", JSON.stringify(searchHistory.value));
 };
 
-// 🔹 Search again from history
-const searchFromHistory = (query) => {
-  searchQuery.value = query;
-  filterResults();
-};
-
-// 🔹 Toggle Like / Unlike Products
 const toggleLike = (product) => {
   if (likedProducts.value[product.id]) {
     delete likedProducts.value[product.id];
@@ -118,12 +107,19 @@ const toggleLike = (product) => {
   localStorage.setItem("likedProducts", JSON.stringify(likedProducts.value));
 };
 
-// 🔹 Go back
 const goBack = () => {
   router.push("/");
 };
-</script>
 
+const filteredCategoryProducts = computed(() => {
+  if (!selectedCategory.value || !allProducts.value.length) return [];
+  // console.log("Filtering Products for Category:", selectedCategory.value.id);
+  return allProducts.value.filter(p => {
+    // console.log("Checking Product:", p);
+    return p.categoryId === selectedCategory.value.id;
+  });
+});
+</script>
 <template>
   <transition name="slide-right">
     <div class="p-3">
@@ -157,9 +153,9 @@ const goBack = () => {
         <!-- 🔹 Filtered Categories -->
         <div v-if="filteredCategories.length" class="mt-4 space-y-2">
           <h3 class="font-bold text-gray-800">{{ t('search.categories') }}</h3>
-          <div v-for="category in filteredCategories" :key="category.id" @click="goToCategoryDetail(category)" class="cursor-pointer bg-white p-3 rounded-lg shadow-sm flex items-center hover:bg-gray-100">
+          <div v-for="category in filteredCategories" :key="category.id" @click="goToCategoryDetail(category.id)" class="cursor-pointer bg-white p-3 rounded-lg shadow-sm flex items-center hover:bg-gray-100">
             <img :src="category.image" class="w-10 h-10 rounded-md object-cover" />
-            <p class="text-gray-800 font-semibold flex-1 text-center">{{ category.name }}</p>
+            <p class="text-gray-800 font-semibold flex-1 text-center">{{ category.id }}</p>
           </div>
         </div>
 
@@ -183,7 +179,7 @@ const goBack = () => {
       <div v-if="!searchQuery.length" class="mt-6">
         <h2 class="text-lg font-bold">{{ t('search.categories') }}</h2>
         <div class="mt-2 space-y-2">
-          <div v-for="category in allCategories" :key="category.id" @click="goToCategoryDetail(category)" class="cursor-pointer bg-white p-3 rounded-lg shadow-sm flex items-center hover:bg-gray-100">
+          <div v-for="category in allCategories" :key="category.id" @click="goToCategoryDetail(category.id)" class="cursor-pointer bg-white p-3 rounded-lg shadow-sm flex items-center hover:bg-gray-100">
             <img :src="category.image" class="w-10 h-10 rounded-md object-cover" />
             <p class="text-gray-800 font-semibold flex-1 text-center">{{ category.id }}</p>
           </div>
